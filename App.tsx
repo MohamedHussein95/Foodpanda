@@ -1,20 +1,39 @@
-import { StatusBar } from 'expo-status-bar';
-import { StyleSheet, Text, View } from 'react-native';
+import "react-native-gesture-handler";
 
-export default function App() {
+import * as splashScreen from "expo-splash-screen";
+import { StatusBar } from "expo-status-bar";
+import { Text, View } from "react-native";
+import { PaperProvider } from "react-native-paper";
+import { Provider } from "react-redux";
+import { store } from "./src/redux/store";
+import { useFonts } from "expo-font";
+import { useCallback } from "react";
+import { Fonts } from "./src/constants";
+import AppNavigator from "./src/navigation/AppNavigator";
+
+splashScreen.preventAutoHideAsync();
+
+const App = () => {
+  const [fontsLoaded] = useFonts(Fonts);
+
+  const onLayoutRootView = useCallback(async () => {
+    if (fontsLoaded) {
+      await splashScreen.hideAsync();
+    }
+  }, [fontsLoaded]);
+
+  if (!fontsLoaded) {
+    return null;
+  }
+
   return (
-    <View style={styles.container}>
-      <Text>Open up App.tsx to start working on your app!</Text>
-      <StatusBar style="auto" />
-    </View>
+    <Provider store={store}>
+      <PaperProvider>
+        <AppNavigator onReady={onLayoutRootView} />
+        <StatusBar style="auto" />
+      </PaperProvider>
+    </Provider>
   );
-}
+};
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#fff',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-});
+export default App;
