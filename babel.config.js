@@ -4,10 +4,13 @@ module.exports = function (api) {
     presets: ["babel-preset-expo"],
     env: {
       development: {
-        plugins: ["nativewind/babel"],
+        plugins: ["nativewind/babel", "react-native-reanimated/plugin"],
       },
       production: {
-        plugins: ["nativewind/babel,react-native-paper/babel"],
+        plugins: [
+          "nativewind/babel,react-native-paper/babel",
+          "react-native-reanimated/plugin",
+        ],
       },
     },
   };

@@ -10,6 +10,8 @@ export default {
   primary300: primaryShades[2],
   primary200: primaryShades[3],
   primary100: primaryShades[4],
+  lightBg: "#fbe7f0",
+  darkBg: "#410520",
   success: "#4ADE80",
   info: "#246BFD",
   warning: "#FACC15",
