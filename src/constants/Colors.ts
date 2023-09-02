@@ -10,6 +10,8 @@ export default {
   primary300: primaryShades[2],
   primary200: primaryShades[3],
   primary100: primaryShades[4],
+  facebook: "#4A61A8",
+  google: "#53A0F4",
   lightBg: "#fbe7f0",
   darkBg: "#410520",
   success: "#4ADE80",

@@ -15,6 +15,12 @@ export const generateShades = (color: string, steps: number) => {
   }
   return shades;
 };
+export const capitalizeWords = (str: string) => {
+  return str
+    .trim()
+    .toLowerCase()
+    .replace(/(^|\s)\S/g, (char) => char.toUpperCase());
+};
 
 const DEVICE_WIDTH = Dimensions.get("window").width;
 const DEVICE_HEIGHT = Dimensions.get("window").height;

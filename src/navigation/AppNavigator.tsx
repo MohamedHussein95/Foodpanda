@@ -50,7 +50,7 @@ const AppNavigator = ({ onReady }: { onReady: () => Promise<void> }) => {
   }, [theme]);
   return (
     <NavigationContainer onReady={onReady}>
-      <ThemeProvider value={!isDarkMode ? darkTheme : defaultTheme}>
+      <ThemeProvider value={isDarkMode ? darkTheme : defaultTheme}>
         <AuthNavigator />
       </ThemeProvider>
     </NavigationContainer>
