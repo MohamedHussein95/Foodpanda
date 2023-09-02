@@ -298,6 +298,9 @@ const AccountSetupScreen = ({ navigation }: any) => {
               onChangeText={setFullName}
               style={styles(colors).input}
               cursorColor={colors.primary}
+              autoCapitalize="words"
+              autoComplete="name"
+              maxLength={15}
             />
           </View>
           <Text
@@ -313,7 +316,7 @@ const AccountSetupScreen = ({ navigation }: any) => {
             style={[styles(colors).inputsWrapper]}
             onPress={handleGendertoggle}
           >
-            <Text>{selectedGender}</Text>
+            <Text style={{ color: colors.darkGrey }}>{selectedGender}</Text>
           </TouchableOpacity>
 
           <Animated.View
@@ -334,8 +337,6 @@ const AccountSetupScreen = ({ navigation }: any) => {
           >
             <TouchableOpacity
               style={{
-                borderBottomWidth: 1,
-                borderBottomColor: colors.mediumGrey,
                 paddingTop: hp(1),
               }}
               onPress={() => {
@@ -347,7 +348,7 @@ const AccountSetupScreen = ({ navigation }: any) => {
                 style={{
                   color: colors.darkGrey,
                   fontFamily: "Bold",
-                  fontSize: wp(3.5),
+                  fontSize: wp(4),
                 }}
               >
                 Male
@@ -355,8 +356,6 @@ const AccountSetupScreen = ({ navigation }: any) => {
             </TouchableOpacity>
             <TouchableOpacity
               style={{
-                borderBottomWidth: 1,
-                borderBottomColor: colors.mediumGrey,
                 paddingTop: hp(1),
               }}
               onPress={() => {
@@ -368,7 +367,7 @@ const AccountSetupScreen = ({ navigation }: any) => {
                 style={{
                   color: colors.darkGrey,
                   fontFamily: "Bold",
-                  fontSize: wp(3.5),
+                  fontSize: wp(4),
                 }}
               >
                 Female
@@ -376,8 +375,6 @@ const AccountSetupScreen = ({ navigation }: any) => {
             </TouchableOpacity>
             <TouchableOpacity
               style={{
-                borderBottomWidth: 1,
-                borderBottomColor: colors.mediumGrey,
                 paddingTop: hp(1),
               }}
               onPress={() => {
@@ -389,7 +386,7 @@ const AccountSetupScreen = ({ navigation }: any) => {
                 style={{
                   color: colors.darkGrey,
                   fontFamily: "Bold",
-                  fontSize: wp(3.5),
+                  fontSize: wp(4),
                 }}
               >
                 Not Sure
@@ -422,7 +419,6 @@ const AccountSetupScreen = ({ navigation }: any) => {
             textContainerStyle={{
               backgroundColor: colors.lightGrey,
             }}
-            countryPickerButtonStyle={{}}
             flagButtonStyle={{
               width: wp(15),
               backgroundColor: colors.lightGrey,
@@ -502,6 +498,8 @@ const AccountSetupScreen = ({ navigation }: any) => {
               style={styles(colors).input}
               placeholder="Enter your address"
               cursorColor={colors.primary}
+              autoComplete="address-line1"
+              autoCapitalize="words"
             />
           </View>
         </View>
