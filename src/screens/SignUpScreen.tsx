@@ -1,4 +1,9 @@
-import { Feather, FontAwesome, Octicons } from "@expo/vector-icons";
+import {
+  Feather,
+  FontAwesome,
+  MaterialCommunityIcons,
+  Octicons,
+} from "@expo/vector-icons";
 import { useTheme } from "@react-navigation/native";
 import { Formik } from "formik";
 import React, { useEffect, useState } from "react";
@@ -25,24 +30,41 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import Toast from "react-native-root-toast";
 
 const validationSchema = Yup.object().shape({
-  email: Yup.string().required().label("Email"),
-  password: Yup.string().required().label("Password"),
+  email: Yup.string()
+    .email("Please enter a valid email address")
+    .required()
+    .label("Email")
+    .test("email", "Invalid email address", (value) => {
+      return /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i.test(value);
+    }),
+  password: Yup.string()
+    .min(8, ({ min }) => `Password must be at least ${min} characters!`)
+    .required()
+    .label("Password"),
+  userName: Yup.string()
+    .test(
+      "no-white-space",
+      "User Name cannot contain white spaces",
+      (value: any) => {
+        return !/\s/.test(value); // Test if value contains white spaces
+      }
+    )
+    .matches(/^@[^-]/, 'User Name must start with "@" symbol')
+    .min(3)
+    .max(15)
+    .required()
+    .label("User Name"),
 });
 
-const SignInScreen = ({ navigation }: any) => {
+const SignUpScreen = ({ navigation }: any) => {
   const isConnected = useNetworkState();
   const { colors } = useTheme();
   const [loading, setLoading] = useState(false);
 
-  const [numberOfTries, setNumberOfTries] = useState(3);
-  const [outOfTries, setOutOfTries] = useState(false);
-  const [seconds, setSeconds] = useState(29);
   const [hidePassword, setHidePassword] = useState(true);
   const [checked, setChecked] = useState(true);
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
 
-  const handleSignIn = async (email: string, password: string) => {
+  const handleSignUp = async (email: string, password: string) => {
     try {
       setLoading(true);
       if (checked) {
@@ -75,37 +97,6 @@ const SignInScreen = ({ navigation }: any) => {
       });
     }
   };
-
-  useEffect(() => {
-    if (numberOfTries <= 0) {
-      setOutOfTries(true);
-    }
-  }, [numberOfTries]);
-  useEffect(() => {
-    if (seconds <= 0) {
-      setOutOfTries(false);
-      setNumberOfTries(3);
-    }
-  }, [seconds]);
-  useEffect(() => {
-    let timer;
-    if (outOfTries) {
-      timer = setInterval(() => setSeconds((prev) => prev - 1), 1000);
-    } else {
-      setSeconds(29);
-      clearInterval(timer);
-    }
-    return () => clearInterval(timer);
-  }, [outOfTries]);
-
-  useEffect(() => {
-    (async function () {
-      const email = await AsyncStorage.getItem("email");
-      const password = await AsyncStorage.getItem("password");
-      setEmail(email);
-      setPassword(password);
-    })();
-  }, []);
 
   return (
     <KeyboardAvoidingView
@@ -163,7 +154,7 @@ const SignInScreen = ({ navigation }: any) => {
                 color: colors.text,
               }}
             >
-              Sign in
+              Sign UP
             </Text>
           </View>
         </View>
@@ -183,22 +174,36 @@ const SignInScreen = ({ navigation }: any) => {
               marginBottom: hp(2),
             }}
           >
-            Welcome to Foodpanda
+            Create Account
           </Text>
-          <Text
-            style={{
-              fontFamily: "Medium",
-              fontSize: wp(4),
-              color: colors.text,
-            }}
+          <TouchableOpacity
+            onPress={() => navigation.navigate("SignInScreen")}
+            style={{}}
           >
-            Enter your phone number or email address for signin.Enjoy your food
-          </Text>
+            <Text
+              style={{
+                fontFamily: "Medium",
+                fontSize: wp(4),
+                color: colors.text,
+              }}
+            >
+              Enter your Name,Email and Password for sign up.
+              <Text
+                style={{
+                  fontFamily: "Medium",
+                  fontSize: wp(4),
+                  color: colors.primary,
+                }}
+              >
+                Already have account?
+              </Text>
+            </Text>
+          </TouchableOpacity>
         </View>
         <Formik
-          initialValues={{ email: "", password: "" }}
+          initialValues={{ userName: "@", email: "", password: "" }}
           validationSchema={validationSchema}
-          onSubmit={(values) => handleSignIn(values.email, values.password)}
+          onSubmit={(values) => handleSignUp(values.email, values.password)}
         >
           {({
             handleChange,
@@ -207,18 +212,92 @@ const SignInScreen = ({ navigation }: any) => {
             values,
             errors,
             touched,
+            isValid,
           }) => (
             <View style={styles(colors).inputCon}>
-              <View style={styles(colors).inputsWrapper}>
-                <Feather
-                  style={styles(colors).icon}
-                  name="user"
-                  size={wp(6)}
-                  color={colors.mediumGrey}
+              <View
+                style={[
+                  styles(colors).inputsWrapper,
+                  {
+                    borderWidth: !errors.userName && touched.userName ? 1 : 0,
+                    borderColor:
+                      !errors.userName && touched.userName
+                        ? Colors.success
+                        : null,
+                  },
+                ]}
+              >
+                {!errors.userName && touched.userName ? (
+                  <Feather
+                    style={styles(colors).icon}
+                    name="user"
+                    size={wp(6)}
+                    color={Colors.success}
+                  />
+                ) : (
+                  <Feather
+                    style={styles(colors).icon}
+                    name="user"
+                    size={wp(6)}
+                    color={colors.mediumGrey}
+                  />
+                )}
+
+                <TextInput
+                  name="userName"
+                  placeholder="User name"
+                  value={values.userName}
+                  onBlur={handleBlur("userName")}
+                  onChangeText={handleChange("userName")}
+                  style={styles(colors).input}
+                  placeholderTextColor={colors.mediumGrey}
+                  cursorColor={colors.primary}
+                  defaultValue="@"
                 />
+              </View>
+
+              {errors.userName && touched.userName ? (
+                <View style={styles(colors).errorContainer}>
+                  <Text
+                    style={{
+                      color: Colors.error,
+                      fontSize: wp(3),
+                      fontFamily: "Medium",
+                    }}
+                  >
+                    {errors.userName}
+                  </Text>
+                </View>
+              ) : null}
+              <View
+                style={[
+                  styles(colors).inputsWrapper,
+                  {
+                    borderWidth: !errors.email && touched.email ? 1 : 0,
+                    borderColor:
+                      !errors.email && touched.email ? Colors.success : null,
+                  },
+                ]}
+              >
+                {!errors.email && touched.email ? (
+                  <MaterialCommunityIcons
+                    style={styles(colors).icon}
+                    name="email-outline"
+                    size={wp(6)}
+                    color={Colors.success}
+                  />
+                ) : (
+                  <MaterialCommunityIcons
+                    style={styles(colors).icon}
+                    name="email-outline"
+                    size={wp(6)}
+                    color={colors.mediumGrey}
+                  />
+                )}
+
                 <TextInput
                   name="email"
-                  placeholder="Email"
+                  placeholder="Email address"
                   value={values.email}
                   onBlur={handleBlur("email")}
                   onChangeText={handleChange("email")}
@@ -241,13 +320,34 @@ const SignInScreen = ({ navigation }: any) => {
                   </Text>
                 </View>
               ) : null}
-              <View style={styles(colors).inputsWrapper}>
-                <Feather
-                  style={styles(colors).icon}
-                  name="lock"
-                  size={wp(6)}
-                  color={colors.mediumGrey}
-                />
+              <View
+                style={[
+                  styles(colors).inputsWrapper,
+                  {
+                    borderWidth: !errors.password && touched.password ? 1 : 0,
+                    borderColor:
+                      !errors.password && touched.password
+                        ? Colors.success
+                        : null,
+                  },
+                ]}
+              >
+                {!errors.password && touched.password ? (
+                  <Feather
+                    style={styles(colors).icon}
+                    name="lock"
+                    size={wp(6)}
+                    color={Colors.success}
+                  />
+                ) : (
+                  <Feather
+                    style={styles(colors).icon}
+                    name="lock"
+                    size={wp(6)}
+                    color={colors.mediumGrey}
+                  />
+                )}
+
                 <TextInput
                   name="password"
                   placeholder="Password"
@@ -259,7 +359,23 @@ const SignInScreen = ({ navigation }: any) => {
                   cursorColor={colors.primary}
                   secureTextEntry={hidePassword}
                 />
-                {hidePassword ? (
+                {hidePassword && !errors.password && touched.password ? (
+                  <Octicons
+                    style={styles(colors).icon}
+                    name="eye-closed"
+                    size={wp(6)}
+                    color={Colors.success}
+                    onPress={() => setHidePassword(!hidePassword)}
+                  />
+                ) : !hidePassword && !errors.password && touched.password ? (
+                  <Octicons
+                    style={styles(colors).icon}
+                    name="eye"
+                    size={wp(6)}
+                    color={Colors.success}
+                    onPress={() => setHidePassword(!hidePassword)}
+                  />
+                ) : hidePassword ? (
                   <Octicons
                     style={styles(colors).icon}
                     name="eye-closed"
@@ -291,58 +407,16 @@ const SignInScreen = ({ navigation }: any) => {
                   </Text>
                 </View>
               ) : null}
-              <View
-                style={{
-                  width: "100%",
-                  alignItems: "center",
-                  flexDirection: "row",
-                  justifyContent: "space-between",
-                }}
-              >
-                <View style={styles(colors).toggleContainer}>
-                  <RememberMe
-                    status={checked}
-                    onPress={() => setChecked(!checked)}
-                    size={0.5}
-                  />
-                  <Text style={styles(colors).rememberMeText}>Remember me</Text>
-                </View>
-                <Pressable
-                  onPress={() => navigation.navigate("ForgotPasswordScreen")}
-                >
-                  <Text
-                    style={{
-                      color: colors.primary,
-                      fontSize: wp(4),
-                      fontFamily: "Medium",
-                    }}
-                  >
-                    Forgot password
-                  </Text>
-                </Pressable>
-              </View>
-              {outOfTries && (
-                <View style={{ marginTop: hp(2) }}>
-                  <Text
-                    style={{
-                      color: colors.primary,
-                      fontSize: wp(3.5),
-                      fontFamily: "Medium",
-                    }}
-                  >
-                    You can retry again in {seconds}s
-                  </Text>
-                </View>
-              )}
+
               <TouchableOpacity
                 onPress={handleSubmit}
-                disabled={loading || outOfTries}
+                disabled={!isValid}
                 activeOpacity={0.8}
                 style={[
                   styles(colors).button,
                   {
                     backgroundColor:
-                      outOfTries || loading ? colors.lightGrey : colors.primary,
+                      !isValid || loading ? colors.lightGrey : colors.primary,
                   },
                 ]}
               >
@@ -351,48 +425,17 @@ const SignInScreen = ({ navigation }: any) => {
                     styles(colors).buttText,
                     {
                       color:
-                        outOfTries || loading
-                          ? colors.mediumGrey
-                          : Colors.white,
+                        !isValid || loading ? colors.mediumGrey : Colors.white,
                     },
                   ]}
                 >
-                  Sign In
+                  Create Account
                 </Text>
               </TouchableOpacity>
             </View>
           )}
         </Formik>
-        <TouchableOpacity
-          onPress={() => navigation.navigate("SignUpScreen")}
-          style={{
-            marginTop: hp(5),
-            width: wp(100),
-            justifyContent: "center",
-            alignItems: "center",
-            flexDirection: "row",
-            flexWrap: "wrap",
-          }}
-        >
-          <Text
-            style={{
-              color: colors.text,
-              fontFamily: "Medium",
-              fontSize: wp(3.5),
-            }}
-          >
-            Don't Have an account?{" "}
-          </Text>
-          <Text
-            style={{
-              color: colors.primary,
-              fontFamily: "Medium",
-              fontSize: wp(3.5),
-            }}
-          >
-            Sign Up
-          </Text>
-        </TouchableOpacity>
+
         <Text
           style={{
             fontFamily: "Medium",
@@ -479,7 +522,7 @@ const SignInScreen = ({ navigation }: any) => {
   );
 };
 
-export default SignInScreen;
+export default SignUpScreen;
 
 const styles = (colors: any) =>
   StyleSheet.create({
@@ -496,18 +539,18 @@ const styles = (colors: any) =>
       padding: wp(3),
       height: hp(8),
       borderRadius: wp(2),
-      flexDirection: "row",
-      alignItems: "center",
-      gap: wp(3),
       elevation: 1,
       shadowColor: Colors.primary100,
       shadowOffset: { width: 0, height: 1 },
       shadowRadius: wp(2),
       shadowOpacity: 0.5,
+      flexDirection: "row",
+      alignItems: "center",
+      gap: wp(3),
     },
     input: {
       flex: 1,
-      color: colors.text,
+      color: colors.darkGrey,
       fontFamily: "Medium",
       fontSize: wp(4),
     },

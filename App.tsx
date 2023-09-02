@@ -1,5 +1,6 @@
 import "react-native-gesture-handler";
 
+import { RootSiblingParent } from "react-native-root-siblings";
 import * as splashScreen from "expo-splash-screen";
 import { StatusBar } from "expo-status-bar";
 import { Text, View } from "react-native";
@@ -27,12 +28,16 @@ const App = () => {
   }
 
   return (
-    <Provider store={store}>
-      <PaperProvider>
-        <AppNavigator onReady={onLayoutRootView} />
-        <StatusBar style="auto" />
-      </PaperProvider>
-    </Provider>
+    <>
+      <StatusBar />
+      <RootSiblingParent>
+        <Provider store={store}>
+          <PaperProvider>
+            <AppNavigator onReady={onLayoutRootView} />
+          </PaperProvider>
+        </Provider>
+      </RootSiblingParent>
+    </>
   );
 };
 
