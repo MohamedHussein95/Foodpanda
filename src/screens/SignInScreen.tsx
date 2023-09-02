@@ -28,6 +28,9 @@ import { hp, wp } from "../utils/helpers";
 
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import Toast from "react-native-root-toast";
+import { auth } from "../firebaseConfig";
+import { signIn } from "../services/authActions";
+import { useAppDispatch } from "../hooks/hooks";
 
 const validationSchema = Yup.object().shape({
   email: Yup.string().required().label("Email"),
@@ -47,9 +50,12 @@ const SignInScreen = ({ navigation }: any) => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
+  const dispatch = useAppDispatch();
+
   const handleSignIn = async (email: string, password: string) => {
     try {
       setLoading(true);
+
       if (checked) {
         await AsyncStorage.setItem("email", email);
         await AsyncStorage.setItem("password", password);
@@ -62,21 +68,16 @@ const SignInScreen = ({ navigation }: any) => {
           await AsyncStorage.removeItem("password");
         }
       }
+      await signIn(email, password, dispatch);
       setLoading(false);
-    } catch (error) {
+    } catch (error: any) {
       setLoading(false);
       setNumberOfTries((prev) => prev - 1);
-      Toast.show(error?.message || error?.data?.message || error, {
-        duration: Toast.durations.LONG,
+      Toast.show(error?.message, {
+        duration: Toast.durations.SHORT,
         position: Toast.positions.BOTTOM,
-        shadow: true,
         animation: true,
         delay: 0,
-        containerStyle: {
-          borderRadius: wp(50),
-          padding: wp(3),
-          paddingVertical: 0,
-        },
       });
     }
   };

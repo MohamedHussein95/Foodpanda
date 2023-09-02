@@ -19,12 +19,15 @@ const userSlice = createSlice({
       state.user = action.payload;
       AsyncStorage.setItem("userId", JSON.stringify(action.payload?.uid));
     },
+    authenticateUser: (state) => {
+      state.isAuthenticated = true;
+    },
     logOut: (state) => {
       return initialState;
     },
   },
 });
 
-export const { setUser, logOut } = userSlice.actions;
+export const { setUser, logOut, authenticateUser } = userSlice.actions;
 
 export default userSlice.reducer;

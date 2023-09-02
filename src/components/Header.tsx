@@ -13,7 +13,7 @@ const isIos = Platform.OS === "ios";
 const Header = () => {
   const { colors } = useTheme();
 
-  const user = useAppSelector((state) => state.users.user);
+  const user = useAppSelector((state) => state.user.user);
   const [userLocation, setUserLocation] = useState<object>({});
   const [address, setAddress] = useState<Array<object>>([]);
 

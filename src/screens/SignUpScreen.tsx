@@ -74,23 +74,19 @@ const SignUpScreen = ({ navigation }: any) => {
   ) => {
     try {
       setLoading(true);
-      await signUp(email, password, dispatch, userName);
+      const res = await signUp(email, password, dispatch, userName);
       setLoading(false);
-      navigation.navigate("AccountSetUpScreen");
-    } catch (error) {
+      if (res?.uid) {
+        navigation.navigate("AccountSetUpScreen");
+      }
+    } catch (error: any) {
       setLoading(false);
 
-      Toast.show(error?.message || error?.data?.message || error, {
-        duration: Toast.durations.LONG,
+      Toast.show(error?.message, {
+        duration: Toast.durations.SHORT,
         position: Toast.positions.BOTTOM,
-        shadow: true,
         animation: true,
         delay: 0,
-        containerStyle: {
-          borderRadius: wp(50),
-          padding: wp(3),
-          paddingVertical: 0,
-        },
       });
     }
   };

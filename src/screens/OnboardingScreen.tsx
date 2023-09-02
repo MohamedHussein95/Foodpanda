@@ -56,7 +56,7 @@ const OnboardingScreen = ({ navigation }: any) => {
       });
       setCurrentSlideIndex(nextSlideIndex);
     } else if (currentSlideIndex === SLIDES.length - 1) {
-      navigation.replace("LetInScreen");
+      navigation.replace("SignInScreen");
     }
   };
   const skip = () => {
@@ -119,9 +119,7 @@ const OnboardingScreen = ({ navigation }: any) => {
                   shadowRadius: wp(3),
                   shadowOpacity: 0.5,
                 }}
-                onPress={() => {
-                  console.log("pressed");
-                }}
+                onPress={goToNextSlide}
                 activeOpacity={0.7}
               >
                 <Text className="font-Bold text-xl text-white">

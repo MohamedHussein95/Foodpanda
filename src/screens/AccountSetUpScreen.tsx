@@ -25,6 +25,9 @@ import { CustomLoader, RememberMe } from "../components";
 import { useAppSelector } from "../hooks/hooks";
 import MapView, { Marker } from "react-native-maps";
 import PhoneInput from "react-native-phone-number-input";
+import { addUserToStorage } from "../services/authActions";
+import { authenticateUser, setUser } from "../redux/userSlice";
+import { uploadFile } from "../services/fileActions";
 
 const AccountSetupScreen = ({ navigation }: any) => {
   const { colors, dark } = useTheme();
@@ -33,7 +36,8 @@ const AccountSetupScreen = ({ navigation }: any) => {
   const [imgUrl, setImgUrl] = useState("");
   const [modalOpen, setModalOpen] = useState(false);
   const [userLocation, setUserLocation] = useState<object>({});
-  const [address, setAddress] = useState<Array<object>>([]);
+  const [address, setAddress] = useState<string>("");
+  const [fullName, setFullName] = useState("");
   const [genderToggled, setGenderToggled] = useState(false);
   const [selectedGender, setSelectedGender] = useState("Male");
   const phoneInput = useRef<PhoneInput>(null);
@@ -105,12 +109,44 @@ const AccountSetupScreen = ({ navigation }: any) => {
 
   const handleUploadPicture = async () => {
     try {
-    } catch (error) {}
+      let url;
+      if (imgUrl) {
+        url = await uploadFile(
+          imgUrl,
+          imgUrl.split("/").pop(),
+          "profilePhotos"
+        );
+      }
+      console.log(url);
+      return url;
+    } catch (error) {
+      console.log(error);
+    }
   };
 
   const handleContinue = async (userName: string) => {
+    setLoading(true);
+    const body = {
+      uid: user.uid,
+      fullName,
+      avatar: await handleUploadPicture(),
+      phoneNumber: formattedValue,
+      address,
+      gender: selectedGender,
+      notification: checked,
+      promotionalNotification: promoChecked,
+    };
+    console.log(body);
+
     try {
-    } catch (error) {}
+      const res = await addUserToStorage(body);
+      dispatch(setUser({ ...user, ...body }));
+      setLoading(false);
+      dispatch(authenticateUser());
+    } catch (error) {
+      setLoading(false);
+      console.log(error);
+    }
   };
   const handleSkip = async (userName: string) => {
     try {
@@ -149,6 +185,12 @@ const AccountSetupScreen = ({ navigation }: any) => {
   //     `${reversedGeoLocation[0].street},${reversedGeoLocation[0].city}`
   //   );
   // };
+
+  const isValid =
+    imgUrl.length !== 0 &&
+    address.length !== 0 &&
+    selectedGender.length !== 0 &&
+    phoneInput.current?.isValidNumber(value);
 
   return (
     <View style={styles(colors).screen}>
@@ -252,8 +294,8 @@ const AccountSetupScreen = ({ navigation }: any) => {
           </Text>
           <View style={styles(colors).inputsWrapper}>
             <TextInput
-              value={address}
-              onChangeText={setAddress}
+              value={fullName}
+              onChangeText={setFullName}
               style={styles(colors).input}
               cursorColor={colors.primary}
             />
@@ -463,14 +505,17 @@ const AccountSetupScreen = ({ navigation }: any) => {
             />
           </View>
         </View>
-        <TouchableOpacity
-          style={styles(colors).button}
-          onPress={handleContinue}
-        >
-          <Text style={styles(colors).buttText}>Continue</Text>
-        </TouchableOpacity>
       </ScrollView>
-
+      <TouchableOpacity
+        style={[
+          styles(colors).button,
+          { backgroundColor: isValid ? colors.primary : colors.mediumGrey },
+        ]}
+        onPress={handleContinue}
+        disabled={!isValid}
+      >
+        <Text style={styles(colors).buttText}>Continue</Text>
+      </TouchableOpacity>
       <Modal
         onBackdropPress={onModalClose}
         onBackButtonPress={onModalClose}
@@ -609,7 +654,6 @@ const styles = (colors: any) =>
       aspectRatio: 1,
     },
     button: {
-      backgroundColor: colors.primary,
       padding: wp(4),
       width: wp(95),
       justifyContent: "center",
@@ -620,6 +664,8 @@ const styles = (colors: any) =>
       shadowRadius: wp(1),
       shadowOpacity: 0.5,
       borderRadius: hp(1),
+      alignSelf: "center",
+      marginVertical: hp(2),
     },
     buttText: {
       fontSize: wp(5),

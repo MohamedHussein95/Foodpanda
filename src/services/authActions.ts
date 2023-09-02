@@ -1,8 +1,12 @@
-import { createUserWithEmailAndPassword } from "firebase/auth";
-import { doc, setDoc } from "firebase/firestore";
+import {
+  createUserWithEmailAndPassword,
+  signInWithEmailAndPassword,
+  updateProfile,
+} from "firebase/auth";
+import { doc, getDoc, setDoc, updateDoc } from "firebase/firestore";
 import { Dispatch } from "@reduxjs/toolkit";
 import { auth, db } from "../firebaseConfig";
-import { setUser } from "../redux/userSlice";
+import { authenticateUser, setUser } from "../redux/userSlice";
 import { capitalizeWords } from "../utils/helpers";
 
 export const signUp = async (
@@ -22,30 +26,94 @@ export const signUp = async (
       email: email.toLowerCase(),
     });
     dispatch(setUser(res.user.toJSON()));
-  } catch (error) {
-    console.log(error);
+    return res.user.toJSON();
+  } catch (error: any) {
+    console.log(error.code);
+    let message = "Something went wrong!";
+
+    if (error.code === "auth/email-already-in-use") {
+      message = "Email taken!";
+    }
+    if (error.code === "auth/wrong-password") {
+      message = "Invalid credentials!";
+    }
+    throw new Error(message);
+  }
+};
+export const signIn = async (
+  email: string,
+  password: string,
+  dispatch: Dispatch
+) => {
+  try {
+    const res = await signInWithEmailAndPassword(
+      auth,
+      email.toLowerCase(),
+      password
+    );
+
+    dispatch(setUser(res.user.toJSON()));
+    dispatch(authenticateUser());
+  } catch (error: any) {
+    console.log(error.code);
+    let message = "Something went wrong!";
+
+    if (error.code === "auth/invalid-email") {
+      message = "Invalid email!";
+    }
+    if (error.code === "auth/wrong-password") {
+      message = "Invalid credentials!";
+    }
+    if (error.code === "auth/user-disabled") {
+      message = "Account disabled!";
+    }
+    if (error.code === "auth/user-not-found") {
+      message = "User not found!";
+    }
+    throw new Error(message);
   }
 };
 
-const addUserToStorage = async (
-  uid: string,
-  fullName: string,
-  phoneNumber: string,
-  address: string,
-  gender: string,
-  notification: boolean,
-  promotionalNotification: boolean
-) => {
+export const addUserToStorage = async ({
+  uid,
+  fullName,
+  phoneNumber,
+  address,
+  gender,
+  avatar,
+  notification,
+  promotionalNotification,
+}: {
+  uid: string;
+  fullName: string;
+  phoneNumber: string;
+  address: string;
+  gender: string;
+  avatar: string;
+  notification: boolean;
+  promotionalNotification: boolean;
+}) => {
   try {
     const body = {
       fullName: capitalizeWords(fullName),
+      avatar,
       phoneNumber,
       address,
       gender: capitalizeWords(gender),
       notification,
       promotionalNotification,
     };
-    const docRef = await setDoc(doc(db, "Users", `${uid}`), body);
+    const docExists = (await getDoc(doc(db, "Users", `${uid}`))).id;
+
+    if (!docExists) {
+      const docRef = await setDoc(doc(db, "Users", `${uid}`), body);
+    } else {
+      const docRef = await updateDoc(doc(db, "Users", `${uid}`), body);
+    }
+    await updateProfile(auth.currentUser, {
+      displayName: fullName,
+      photoURL: avatar,
+    });
   } catch (error) {
     console.log(error);
   }
