@@ -41,6 +41,7 @@ const defaultTheme = {
 };
 
 const AppNavigator = ({ onReady }: { onReady: () => Promise<void> }) => {
+  const isAuth = useAppSelector((state) => state.user.isAuthenticated);
   const isDarkMode = useAppSelector((state) => state.settings.darkMode);
   const theme = useColorScheme();
   const dispatch = useAppDispatch();
@@ -51,7 +52,7 @@ const AppNavigator = ({ onReady }: { onReady: () => Promise<void> }) => {
   return (
     <NavigationContainer onReady={onReady}>
       <ThemeProvider value={isDarkMode ? darkTheme : defaultTheme}>
-        <AuthNavigator />
+        {isAuth ? <MainNavigator /> : <AuthNavigator />}
       </ThemeProvider>
     </NavigationContainer>
   );
