@@ -1,4 +1,9 @@
-import { Feather, FontAwesome, Octicons } from "@expo/vector-icons";
+import {
+  Feather,
+  FontAwesome,
+  MaterialCommunityIcons,
+  Octicons,
+} from "@expo/vector-icons";
 import { useTheme } from "@react-navigation/native";
 import { Formik } from "formik";
 import React, { useEffect, useState } from "react";
@@ -147,7 +152,12 @@ const SignInScreen = ({ navigation }: any) => {
             paddingHorizontal: wp(3),
           }}
         >
-          <FontAwesome name="angle-left" size={wp(7)} color={colors.text} />
+          <FontAwesome
+            name="angle-left"
+            size={wp(7)}
+            color={colors.text}
+            onPress={() => navigation.goBack()}
+          />
           <View
             style={{
               flex: 1,
@@ -210,9 +220,9 @@ const SignInScreen = ({ navigation }: any) => {
           }) => (
             <View style={styles(colors).inputCon}>
               <View style={styles(colors).inputsWrapper}>
-                <Feather
+                <MaterialCommunityIcons
                   style={styles(colors).icon}
-                  name="user"
+                  name="email-outline"
                   size={wp(6)}
                   color={colors.mediumGrey}
                 />

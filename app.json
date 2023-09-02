@@ -19,10 +19,30 @@
       "adaptiveIcon": {
         "foregroundImage": "./src/assets/adaptive-icon.png",
         "backgroundColor": "#ffffff"
-      }
+      },
+      "package": "com.legendman.Foodpanda"
     },
+    "plugins": [
+      [
+        "expo-updates",
+        {
+          "username": "legendman"
+        }
+      ]
+    ],
     "web": {
       "favicon": "./src/assets/favicon.png"
+    },
+    "extra": {
+      "eas": {
+        "projectId": "c68a8065-d29d-428f-900b-7543d4162673"
+      }
+    },
+    "runtimeVersion": {
+      "policy": "appVersion"
+    },
+    "updates": {
+      "url": "https://u.expo.dev/c68a8065-d29d-428f-900b-7543d4162673"
     }
   }
 }

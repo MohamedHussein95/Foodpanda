@@ -1,7 +1,6 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 
-// Define a type for the slice state
 interface userState {
   user: object;
   isAuthenticated: boolean;
@@ -18,7 +17,6 @@ const userSlice = createSlice({
   reducers: {
     setUser: (state, action: PayloadAction<object>) => {
       state.user = action.payload;
-      state.isAuthenticated = true;
       AsyncStorage.setItem("userId", JSON.stringify(action.payload?.uid));
     },
     logOut: (state) => {

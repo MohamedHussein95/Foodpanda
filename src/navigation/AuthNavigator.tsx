@@ -1,6 +1,8 @@
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import React, { useState, useEffect } from "react";
 import {
+  AccountSetUpScreen,
+  ForgotPasswordScreen,
   HomeScreen,
   OnboardingScreen,
   SignInScreen,
@@ -13,36 +15,41 @@ const Stack = createNativeStackNavigator();
 const AuthNavigator = () => {
   const [firstLaunch, setFirstLaunch] = useState<boolean>();
   useEffect(() => {
-    const getFirstLaunch = async () => {
-      try {
-        const isFirstLaunch = await AsyncStorage.getItem("firstLaunch");
-
-        if (!isFirstLaunch) {
-          setFirstLaunch(true);
-          await AsyncStorage.setItem("firstLaunch", "false");
-          console.log("yes");
-        }
+    async function setData() {
+      const isFirstLaunch = await AsyncStorage.getItem("isFirstLaunch");
+      if (isFirstLaunch == null) {
+        setFirstLaunch(true);
+        AsyncStorage.setItem("isFirstLaunch", "false");
+      } else {
         setFirstLaunch(false);
-      } catch (error) {
-        console.log(error);
       }
-    };
-    getFirstLaunch();
+    }
+    setData();
   }, []);
 
   return (
-    <Stack.Navigator
-      screenOptions={{
-        headerShown: false,
-      }}
-      initialRouteName={firstLaunch ? "OnboardingScreen" : "SignInScreen"}
-    >
-      {firstLaunch && (
-        <Stack.Screen name="OnboardingScreen" component={OnboardingScreen} />
-      )}
-      <Stack.Screen name="SignInScreen" component={SignInScreen} />
-      <Stack.Screen name="SignUpScreen" component={SignUpScreen} />
-    </Stack.Navigator>
+    firstLaunch != null && (
+      <Stack.Navigator
+        screenOptions={{
+          headerShown: false,
+        }}
+        initialRouteName={firstLaunch ? "OnboardingScreen" : "SignInScreen"}
+      >
+        {firstLaunch && (
+          <Stack.Screen name="OnboardingScreen" component={OnboardingScreen} />
+        )}
+        <Stack.Screen name="SignInScreen" component={SignInScreen} />
+        <Stack.Screen name="SignUpScreen" component={SignUpScreen} />
+        <Stack.Screen
+          name="AccountSetUpScreen"
+          component={AccountSetUpScreen}
+        />
+        <Stack.Screen
+          name="ForgotPasswordScreen"
+          component={ForgotPasswordScreen}
+        />
+      </Stack.Navigator>
+    )
   );
 };
 

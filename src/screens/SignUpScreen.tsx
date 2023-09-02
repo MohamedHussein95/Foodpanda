@@ -28,6 +28,8 @@ import { hp, wp } from "../utils/helpers";
 
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import Toast from "react-native-root-toast";
+import { signUp } from "../services/authActions";
+import { useAppDispatch } from "../hooks/hooks";
 
 const validationSchema = Yup.object().shape({
   email: Yup.string()
@@ -62,27 +64,22 @@ const SignUpScreen = ({ navigation }: any) => {
   const [loading, setLoading] = useState(false);
 
   const [hidePassword, setHidePassword] = useState(true);
-  const [checked, setChecked] = useState(true);
 
-  const handleSignUp = async (email: string, password: string) => {
+  const dispatch = useAppDispatch();
+
+  const handleSignUp = async (
+    email: string,
+    password: string,
+    userName: string
+  ) => {
     try {
       setLoading(true);
-      if (checked) {
-        await AsyncStorage.setItem("email", email);
-        await AsyncStorage.setItem("password", password);
-      } else {
-        if (
-          (await AsyncStorage.getItem("email")) &&
-          (await AsyncStorage.getItem("password"))
-        ) {
-          await AsyncStorage.removeItem("email");
-          await AsyncStorage.removeItem("password");
-        }
-      }
+      await signUp(email, password, dispatch, userName);
       setLoading(false);
+      navigation.navigate("AccountSetUpScreen");
     } catch (error) {
       setLoading(false);
-      setNumberOfTries((prev) => prev - 1);
+
       Toast.show(error?.message || error?.data?.message || error, {
         duration: Toast.durations.LONG,
         position: Toast.positions.BOTTOM,
@@ -138,7 +135,12 @@ const SignUpScreen = ({ navigation }: any) => {
             paddingHorizontal: wp(3),
           }}
         >
-          <FontAwesome name="angle-left" size={wp(7)} color={colors.text} />
+          <FontAwesome
+            name="angle-left"
+            size={wp(7)}
+            color={colors.text}
+            onPress={() => navigation.goBack()}
+          />
           <View
             style={{
               flex: 1,
@@ -201,9 +203,15 @@ const SignUpScreen = ({ navigation }: any) => {
           </TouchableOpacity>
         </View>
         <Formik
-          initialValues={{ userName: "@", email: "", password: "" }}
+          initialValues={{
+            userName: "@asdasdsa",
+            email: "sdasds@sadsa.com",
+            password: "asdsadsadasdassa",
+          }}
           validationSchema={validationSchema}
-          onSubmit={(values) => handleSignUp(values.email, values.password)}
+          onSubmit={(values) =>
+            handleSignUp(values.email, values.password, values.userName)
+          }
         >
           {({
             handleChange,
