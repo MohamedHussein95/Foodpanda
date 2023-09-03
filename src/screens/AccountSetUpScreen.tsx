@@ -14,6 +14,8 @@ import {
   Touchable,
   Animated,
   Easing,
+  KeyboardAvoidingView,
+  Platform,
 } from "react-native";
 import Modal from "react-native-modal";
 import { Appbar, Avatar } from "react-native-paper";
@@ -136,11 +138,10 @@ const AccountSetupScreen = ({ navigation }: any) => {
       notification: checked,
       promotionalNotification: promoChecked,
     };
-    console.log(body);
 
     try {
       const res = await addUserToStorage(body);
-      dispatch(setUser({ ...user, ...body }));
+      dispatch(setUser({ user: { ...user, ...body } }));
       setLoading(false);
       dispatch(authenticateUser());
     } catch (error) {
@@ -193,15 +194,19 @@ const AccountSetupScreen = ({ navigation }: any) => {
     phoneInput.current?.isValidNumber(value);
 
   return (
-    <View style={styles(colors).screen}>
+    <KeyboardAvoidingView
+      style={styles(colors).screen}
+      behavior={Platform.OS === "ios" ? "padding" : undefined}
+    >
       <ScrollView
         style={{ flex: 1 }}
         contentContainerStyle={{
           flexGrow: 1,
           alignItems: "center",
           gap: hp(5),
-          paddingVertical: hp(5),
+          paddingVertical: hp(6),
         }}
+        showsVerticalScrollIndicator={false}
       >
         <View
           style={{
@@ -300,7 +305,7 @@ const AccountSetupScreen = ({ navigation }: any) => {
               cursorColor={colors.primary}
               autoCapitalize="words"
               autoComplete="name"
-              maxLength={15}
+              maxLength={30}
             />
           </View>
           <Text
@@ -507,7 +512,10 @@ const AccountSetupScreen = ({ navigation }: any) => {
       <TouchableOpacity
         style={[
           styles(colors).button,
-          { backgroundColor: isValid ? colors.primary : colors.mediumGrey },
+          {
+            backgroundColor: isValid ? colors.primary : colors.mediumGrey,
+            marginVertical: hp(4),
+          },
         ]}
         onPress={handleContinue}
         disabled={!isValid}
@@ -551,7 +559,7 @@ const AccountSetupScreen = ({ navigation }: any) => {
             >
               <MaterialIcons
                 name="camera-alt"
-                size={wp(6)}
+                size={wp(10)}
                 color={Colors.white}
               />
             </TouchableOpacity>
@@ -562,7 +570,7 @@ const AccountSetupScreen = ({ navigation }: any) => {
             >
               <MaterialIcons
                 name="insert-photo"
-                size={wp(6)}
+                size={wp(10)}
                 color={Colors.white}
               />
             </TouchableOpacity>
@@ -570,7 +578,7 @@ const AccountSetupScreen = ({ navigation }: any) => {
         </View>
       </Modal>
       <CustomLoader visible={loading} />
-    </View>
+    </KeyboardAvoidingView>
   );
 };
 
@@ -599,7 +607,7 @@ const styles = (colors: any) =>
       backgroundColor: colors.primary,
     },
     modalContainer: {
-      paddingVertical: hp(1),
+      paddingVertical: hp(4),
       paddingHorizontal: wp(3),
       borderTopLeftRadius: wp(3),
       borderTopRightRadius: wp(3),
@@ -632,10 +640,7 @@ const styles = (colors: any) =>
       height: hp(8),
       borderRadius: wp(2),
       elevation: 1,
-      shadowColor: Colors.primary100,
-      shadowOffset: { width: 0, height: 1 },
-      shadowRadius: wp(2),
-      shadowOpacity: 0.5,
+
       flexDirection: "row",
       alignItems: "center",
       gap: wp(3),
@@ -657,10 +662,7 @@ const styles = (colors: any) =>
       justifyContent: "center",
       alignItems: "center",
       elevation: 1,
-      shadowColor: Colors.primary100,
-      shadowOffset: { width: 0, height: 1 },
-      shadowRadius: wp(1),
-      shadowOpacity: 0.5,
+
       borderRadius: hp(1),
       alignSelf: "center",
       marginVertical: hp(2),

@@ -95,7 +95,6 @@ const SignUpScreen = ({ navigation }: any) => {
     <KeyboardAvoidingView
       style={styles(colors).screen}
       behavior={Platform.OS === "ios" ? "padding" : undefined}
-      keyboardVerticalOffset={100}
     >
       {!isConnected && (
         <Animated.View
@@ -120,8 +119,9 @@ const SignUpScreen = ({ navigation }: any) => {
         contentContainerStyle={{
           flexGrow: 1,
           alignItems: "center",
-          paddingTop: hp(5),
+          paddingTop: hp(6),
         }}
+        showsVerticalScrollIndicator={false}
       >
         <View
           style={{
@@ -200,11 +200,12 @@ const SignUpScreen = ({ navigation }: any) => {
         </View>
         <Formik
           initialValues={{
-            userName: "@asdasdsa",
-            email: "sdasds@sadsa.com",
-            password: "asdsadsadasdassa",
+            userName: "@SupremierCk",
+            email: "supremier95@gmail.com",
+            password: "12345678",
           }}
           validationSchema={validationSchema}
+          enableReinitialize={true}
           onSubmit={(values) =>
             handleSignUp(values.email, values.password, values.userName)
           }
@@ -544,10 +545,7 @@ const styles = (colors: any) =>
       height: hp(8),
       borderRadius: wp(2),
       elevation: 1,
-      shadowColor: Colors.primary100,
-      shadowOffset: { width: 0, height: 1 },
-      shadowRadius: wp(2),
-      shadowOpacity: 0.5,
+
       flexDirection: "row",
       alignItems: "center",
       gap: wp(3),
@@ -568,10 +566,7 @@ const styles = (colors: any) =>
       justifyContent: "center",
       alignItems: "center",
       elevation: 1,
-      shadowColor: Colors.primary100,
-      shadowOffset: { width: 0, height: 1 },
-      shadowRadius: wp(1),
-      shadowOpacity: 0.5,
+
       marginTop: hp(3),
       borderRadius: hp(1),
     },
@@ -582,10 +577,7 @@ const styles = (colors: any) =>
       justifyContent: "center",
       alignItems: "center",
       elevation: 1,
-      shadowColor: Colors.primary100,
-      shadowOffset: { width: 0, height: 1 },
-      shadowRadius: wp(1),
-      shadowOpacity: 0.5,
+
       marginBottom: hp(2),
       borderRadius: hp(1),
     },
