@@ -1,13 +1,29 @@
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { Dispatch } from "@reduxjs/toolkit";
 import {
+  Auth,
   createUserWithEmailAndPassword,
   signInWithEmailAndPassword,
+  updateCurrentUser,
   updateProfile,
 } from "firebase/auth";
-import { doc, getDoc, setDoc, updateDoc } from "firebase/firestore";
-import { Dispatch } from "@reduxjs/toolkit";
+import {
+  collection,
+  doc,
+  getDoc,
+  getDocs,
+  query,
+  setDoc,
+  updateDoc,
+  where,
+} from "firebase/firestore";
+import moment from "moment";
 import { auth, db } from "../firebaseConfig";
-import { authenticateUser, setUser } from "../redux/userSlice";
+import { authenticateUser, logOut, setUser } from "../redux/userSlice";
 import { capitalizeWords } from "../utils/helpers";
+import { getUserData } from "./userActions";
+
+let timeOut = null;
 
 export const signUp = async (
   email: string,
@@ -16,19 +32,56 @@ export const signUp = async (
   userName: string
 ) => {
   try {
-    const res = await createUserWithEmailAndPassword(
+    const userRef = collection(db, "Users");
+
+    const q = query(
+      userRef,
+      where("userName", "==", `${userName.toLowerCase()}`)
+    );
+
+    const querySnapshot = await getDocs(q);
+
+    if (querySnapshot.size > 0) {
+      throw new Error("User name is already taken!");
+    }
+    const result = await createUserWithEmailAndPassword(
       auth,
       email.toLowerCase(),
       password
     );
-    await setDoc(doc(db, "Users", `${res.user.uid}`), {
+    await setDoc(doc(db, "Users", `${result.user.uid}`), {
       userName: userName.toLowerCase(),
       email: email.toLowerCase(),
     });
-    dispatch(setUser(res.user.toJSON()));
-    return res.user.toJSON();
+
+    const { uid, stsTokenManager } = await result.user.toJSON();
+    const { accessToken, expirationTime } = stsTokenManager;
+
+    dispatch(
+      setUser({
+        user: { ...result.user.toJSON(), userName, email },
+        token: accessToken,
+      })
+    );
+
+    const expiryDate = new Date(expirationTime);
+    console.log(moment(expiryDate).format("HH:mm"));
+
+    const timeNow = new Date();
+
+    const msTillExpirationTime = expiryDate.getTime() - timeNow.getTime();
+
+    storeUserData(accessToken, uid, expiryDate);
+
+    const secondsTillExpirationTime = msTillExpirationTime / 1000;
+
+    timeOut = setTimeout(() => {
+      dispatch(logOut());
+    }, secondsTillExpirationTime * 1000);
+
+    return result.user.toJSON();
   } catch (error: any) {
-    console.log(error.code);
+    // console.log(error.code);
     let message = "Something went wrong!";
 
     if (error.code === "auth/email-already-in-use") {
@@ -36,6 +89,9 @@ export const signUp = async (
     }
     if (error.code === "auth/wrong-password") {
       message = "Invalid credentials!";
+    }
+    if (error.message === "User name is already taken!") {
+      message = "User name is already taken!";
     }
     throw new Error(message);
   }
@@ -46,13 +102,38 @@ export const signIn = async (
   dispatch: Dispatch
 ) => {
   try {
-    const res = await signInWithEmailAndPassword(
+    const result = await signInWithEmailAndPassword(
       auth,
       email.toLowerCase(),
       password
     );
 
-    dispatch(setUser(res.user.toJSON()));
+    const { uid, stsTokenManager } = await result.user.toJSON();
+    const { accessToken, expirationTime } = stsTokenManager;
+
+    const userData = await getUserData(uid);
+
+    dispatch(
+      setUser({
+        user: { ...result.user.toJSON(), ...userData },
+        token: accessToken,
+      })
+    );
+
+    const expiryDate = new Date(expirationTime);
+    console.log(moment(expiryDate).format("HH:mm"));
+
+    const timeNow = new Date();
+
+    const msTillExpirationTime = expiryDate.getTime() - timeNow.getTime();
+
+    storeUserData(accessToken, uid, expiryDate);
+
+    const secondsTillExpirationTime = msTillExpirationTime / 1000;
+
+    timeOut = setTimeout(() => {
+      dispatch(logOut());
+    }, secondsTillExpirationTime * 1000);
     dispatch(authenticateUser());
   } catch (error: any) {
     console.log(error.code);
@@ -89,7 +170,7 @@ export const addUserToStorage = async ({
   phoneNumber: string;
   address: string;
   gender: string;
-  avatar: string;
+  avatar: string | undefined;
   notification: boolean;
   promotionalNotification: boolean;
 }) => {
@@ -104,17 +185,47 @@ export const addUserToStorage = async ({
       promotionalNotification,
     };
     const docExists = (await getDoc(doc(db, "Users", `${uid}`))).id;
+    console.log("doc exists", docExists);
 
     if (!docExists) {
-      const docRef = await setDoc(doc(db, "Users", `${uid}`), body);
+      await setDoc(doc(db, "Users", `${uid}`), body);
     } else {
-      const docRef = await updateDoc(doc(db, "Users", `${uid}`), body);
+      await updateDoc(doc(db, "Users", `${uid}`), body);
     }
-    await updateProfile(auth.currentUser, {
-      displayName: fullName,
+  } catch (error: any) {
+    throw new Error(error);
+  }
+};
+
+export const storeUserData = (token: string, uid: string, expiryDate: Date) => {
+  AsyncStorage.setItem(
+    "userData",
+    JSON.stringify({
+      token,
+      uid,
+      expiryDate: expiryDate.toISOString(),
+    })
+  );
+};
+
+export const updateUserProfile = async ({
+  displayName,
+  avatar,
+  phoneNumber,
+}: {
+  displayName: string;
+  avatar: string;
+  phoneNumber: string;
+}) => {
+  try {
+    await updateCurrentUser(auth, {
+      phoneNumber,
+      displayName,
       photoURL: avatar,
     });
-  } catch (error) {
+  } catch (error: any) {
     console.log(error);
+
+    throw new Error(error);
   }
 };

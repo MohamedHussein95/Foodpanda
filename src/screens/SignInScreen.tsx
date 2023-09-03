@@ -28,9 +28,8 @@ import { hp, wp } from "../utils/helpers";
 
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import Toast from "react-native-root-toast";
-import { auth } from "../firebaseConfig";
-import { signIn } from "../services/authActions";
 import { useAppDispatch } from "../hooks/hooks";
+import { signIn } from "../services/authActions";
 
 const validationSchema = Yup.object().shape({
   email: Yup.string().required().label("Email"),
@@ -40,15 +39,14 @@ const validationSchema = Yup.object().shape({
 const SignInScreen = ({ navigation }: any) => {
   const isConnected = useNetworkState();
   const { colors } = useTheme();
-  const [loading, setLoading] = useState(false);
-
-  const [numberOfTries, setNumberOfTries] = useState(3);
-  const [outOfTries, setOutOfTries] = useState(false);
-  const [seconds, setSeconds] = useState(29);
-  const [hidePassword, setHidePassword] = useState(true);
-  const [checked, setChecked] = useState(true);
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
+  const [loading, setLoading] = useState<boolean>(false);
+  const [numberOfTries, setNumberOfTries] = useState<number>(3);
+  const [outOfTries, setOutOfTries] = useState<boolean>(false);
+  const [seconds, setSeconds] = useState<number>(29);
+  const [hidePassword, setHidePassword] = useState<boolean>(true);
+  const [checked, setChecked] = useState<boolean>(true);
+  const [email, setEmail] = useState<string | null>("");
+  const [password, setPassword] = useState<string | null>("");
 
   const dispatch = useAppDispatch();
 
@@ -111,13 +109,12 @@ const SignInScreen = ({ navigation }: any) => {
       setEmail(email);
       setPassword(password);
     })();
-  }, []);
+  }, [Formik]);
 
   return (
     <KeyboardAvoidingView
       style={styles(colors).screen}
       behavior={Platform.OS === "ios" ? "padding" : undefined}
-      keyboardVerticalOffset={100}
     >
       {!isConnected && (
         <Animated.View
@@ -142,8 +139,9 @@ const SignInScreen = ({ navigation }: any) => {
         contentContainerStyle={{
           flexGrow: 1,
           alignItems: "center",
-          paddingTop: hp(5),
+          paddingVertical: hp(6),
         }}
+        showsVerticalScrollIndicator={false}
       >
         <View
           style={{
@@ -207,9 +205,10 @@ const SignInScreen = ({ navigation }: any) => {
           </Text>
         </View>
         <Formik
-          initialValues={{ email: "", password: "" }}
+          initialValues={{ email, password }}
           validationSchema={validationSchema}
           onSubmit={(values) => handleSignIn(values.email, values.password)}
+          enableReinitialize={true}
         >
           {({
             handleChange,
@@ -237,6 +236,8 @@ const SignInScreen = ({ navigation }: any) => {
                   placeholderTextColor={colors.mediumGrey}
                   cursorColor={colors.primary}
                   keyboardType="email-address"
+                  defaultValue={email}
+                  autoComplete="email"
                 />
               </View>
               {errors.email && touched.email ? (
@@ -269,6 +270,7 @@ const SignInScreen = ({ navigation }: any) => {
                   placeholderTextColor={colors.mediumGrey}
                   cursorColor={colors.primary}
                   secureTextEntry={hidePassword}
+                  defaultValue={email}
                 />
                 {hidePassword ? (
                   <Octicons
@@ -511,10 +513,6 @@ const styles = (colors: any) =>
       alignItems: "center",
       gap: wp(3),
       elevation: 1,
-      shadowColor: Colors.primary100,
-      shadowOffset: { width: 0, height: 1 },
-      shadowRadius: wp(2),
-      shadowOpacity: 0.5,
     },
     input: {
       flex: 1,
@@ -532,10 +530,6 @@ const styles = (colors: any) =>
       justifyContent: "center",
       alignItems: "center",
       elevation: 1,
-      shadowColor: Colors.primary100,
-      shadowOffset: { width: 0, height: 1 },
-      shadowRadius: wp(1),
-      shadowOpacity: 0.5,
       marginTop: hp(3),
       borderRadius: hp(1),
     },
@@ -546,10 +540,6 @@ const styles = (colors: any) =>
       justifyContent: "center",
       alignItems: "center",
       elevation: 1,
-      shadowColor: Colors.primary100,
-      shadowOffset: { width: 0, height: 1 },
-      shadowRadius: wp(1),
-      shadowOpacity: 0.5,
       marginBottom: hp(2),
       borderRadius: hp(1),
     },

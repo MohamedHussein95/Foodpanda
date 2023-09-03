@@ -1,6 +1,7 @@
 {
   "expo": {
     "name": "Foodpanda",
+    "scheme": "foodpanda",
     "slug": "Foodpanda",
     "version": "1.0.0",
     "orientation": "portrait",

@@ -14,38 +14,8 @@ const Header = () => {
   const { colors } = useTheme();
 
   const user = useAppSelector((state) => state.user.user);
-  const [userLocation, setUserLocation] = useState<object>({});
+
   const [address, setAddress] = useState<Array<object>>([]);
-
-  useEffect(() => {
-    (async () => {
-      try {
-        let { status } = await Location.requestForegroundPermissionsAsync();
-        if (status !== "granted") {
-          console.log("Permission to access location was denied");
-          return;
-        }
-
-        let location = await Location.getCurrentPositionAsync({});
-        setUserLocation(location);
-      } catch (error) {
-        console.log("Error getting user location:", error);
-      }
-    })();
-  }, []);
-
-  useEffect(() => {
-    if (userLocation) {
-      reversedGeoCode();
-    }
-  }, [userLocation]);
-  const reversedGeoCode = async () => {
-    const reversedGeoLocation = await Location.reverseGeocodeAsync({
-      longitude: userLocation?.coords?.longitude,
-      latitude: userLocation?.coords?.latitude,
-    });
-    setAddress(reversedGeoLocation);
-  };
 
   return (
     <View style={styles(colors).header}>
@@ -56,43 +26,7 @@ const Header = () => {
             color={isIos ? Colors.primary500 : Colors.white}
             size={35}
           />
-          <View style={styles(colors).headerTitle}>
-            {address ? (
-              <Text
-                style={styles(colors).address}
-                numberOfLines={1}
-                ellipsizeMode="tail"
-              >
-                {address[0]?.street}
-              </Text>
-            ) : (
-              <Text
-                style={styles(colors).address}
-                numberOfLines={1}
-                ellipsizeMode="tail"
-              >
-                Murambi Street
-              </Text>
-            )}
-
-            {user?.displayName ? (
-              <Text
-                style={styles(colors).name}
-                numberOfLines={1}
-                ellipsizeMode="tail"
-              >
-                {user?.displayName}
-              </Text>
-            ) : (
-              <Text
-                style={styles(colors).name}
-                numberOfLines={1}
-                ellipsizeMode="tail"
-              >
-                Guest
-              </Text>
-            )}
-          </View>
+          <View style={styles(colors).headerTitle}></View>
         </View>
 
         <Ionicons
